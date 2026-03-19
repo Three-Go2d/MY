@@ -4,14 +4,14 @@
 #include "tim.h"
 #include <string.h>
 
-uart_sample_t uart_buf_half[ADC_DMA_SAMPLES]; // °ë»º³å¶ÀÁ¢´æ´¢
-uart_sample_t uart_buf_full[ADC_DMA_SAMPLES]; //Âú»º³å¶ÀÁ¢´æ´¢
-uint16_t adc_dma_buf[ADC_DMA_SAMPLES * ADC_CH_NUM * 2]; //  DMA »º³å
-uint32_t sample_index = 1; // ´Ó 1 ¿ªÊ¼
+uart_sample_t uart_buf_half[ADC_DMA_SAMPLES]; // åŠç¼“å†²ç‹¬ç«‹å­˜å‚¨
+uart_sample_t uart_buf_full[ADC_DMA_SAMPLES]; //æ»¡ç¼“å†²ç‹¬ç«‹å­˜å‚¨
+uint16_t adc_dma_buf[ADC_DMA_SAMPLES * ADC_CH_NUM * 2]; //  DMA ç¼“å†²
+uint32_t sample_index = 1; // ä» 1 å¼€å§‹
 
 extern UART_HandleTypeDef huart4;
 
-// ------------------ ³õÊ¼»¯ ADC DMA ------------------
+// ------------------ åˆå§‹åŒ– ADC DMA ------------------
 void BSP_ADC_Start(void)
 {
     sample_index = 1; 
@@ -19,23 +19,22 @@ void BSP_ADC_Start(void)
     HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_dma_buf, ADC_DMA_SAMPLES * ADC_CH_NUM); 
 }
 
-// ------------------ ×ª»»º¯Êı ------------------
+// ------------------ è½¬æ¢å‡½æ•° ------------------
 static void FillUARTBuffer(uint16_t *src, uart_sample_t *dst)
 {
-		HAL_UART_Transmit(&huart4, (uint8_t *)"OK\r\n", 4, 100);
     for(uint16_t i = 0; i < ADC_DMA_SAMPLES; i++)
     {
-        dst[i].head = FRAME_HEAD;        //  Ö¡Í·
-        dst[i].index = sample_index++;   // ĞòºÅÀÛ¼Ó
+        dst[i].head = FRAME_HEAD;        //  å¸§å¤´
+        dst[i].index = sample_index++;   // åºå·ç´¯åŠ 
         for(uint8_t ch = 0; ch < ADC_CH_NUM; ch++)
-            dst[i].ch[ch] = src[i*ADC_CH_NUM + ch]; //  Í¨µÀ¸³Öµ
+            dst[i].ch[ch] = src[i*ADC_CH_NUM + ch]; //  é€šé“èµ‹å€¼
     }
 }
 
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc)
 {
     FillUARTBuffer(adc_dma_buf, uart_buf_half);
-    while(uart_busy); //  ×èÈûµÈ´ı DMA Íê³É
+    while(uart_busy); //  é˜»å¡ç­‰å¾… DMA å®Œæˆ
     uart_busy = 1;
     HAL_UART_Transmit_DMA(&huart4, (uint8_t*)uart_buf_half, sizeof(uart_buf_half));
 }

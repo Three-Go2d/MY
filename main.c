@@ -112,7 +112,7 @@ int main(void)
     ADC_SINGLE_ENDED
 );
 
-  
+  BSP_UART4_Init();
   BSP_ADC_Start();   // 开始 ADC DMA 采集
 	HAL_TIM_Base_Start(&htim6); 
 	
